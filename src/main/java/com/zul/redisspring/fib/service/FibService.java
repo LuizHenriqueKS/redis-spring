@@ -25,13 +25,13 @@ public class FibService {
 
     @CacheEvict("math:fib")
     public void clearCache(int index) {
-        log.info("Clearing fibonacci cache for index: {}", index);
+        // log.info("Clearing fibonacci cache for index: {}", index);
     }
 
     @Scheduled(fixedRate = 10000)
     @CacheEvict(value = "math:fib", allEntries = true)
     public void clearCache() {
-        log.info("Clearing fibonacci cache for all entries");
+        // log.info("Clearing fibonacci cache for all entries");
     }
 
     // intentional 2^N

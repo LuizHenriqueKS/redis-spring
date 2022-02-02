@@ -23,7 +23,7 @@ public class WeatherService {
 
     @Scheduled(fixedRate = 10000)
     public void update() {
-        log.info("Updating weather info");
+        // log.info("Updating weather info");
         IntStream.rangeClosed(1, 5)
                 .forEach(this.client::getWeatherInfo);
     }

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!--------------------------------------------------------------------------------------------->
+
+    <title>Redis Chat Demo</title>
+</head>
+
+<body style="background-color: #E5E7E9;">
+
+
+    <div class="container mt-5">
+
+        <!-- Name Field -->
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Name</span>
+            <input type="text" class="form-control" placeholder="Name" id="name">
+        </div>
+
+        <!-- Room Field -->
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Room</span>
+            <input type="text" class="form-control" placeholder="Room" id="room">
+        </div>
+
+        <!-- 
+            Start button should initiate this websocket connection
+            You can add logic not to enable this button when one or both - name and room fields are blank
+         -->
+        <div class="mb-3" id="start-control">
+            <button class="form-control btn btn-secondary" type="button" id="start">Start</button>
+        </div>
+
+        <!--
+           Show this div only when start button is pressed.
+        -->
+
+        <div id="chat-div" class="invisible">
+
+            <!-- All chat messages will be appended here -->
+
+            <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label">Messages</label>
+                <div class="form-control overflow-auto" style="height:250px;" id="history">
+
+                </div>
+            </div>
+
+
+            <!-- Type your messages to be sent -->
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Type your message here" id="message">
+                <button class="btn btn-secondary" type="button" id="send">Send</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Add the js to send and receive messages  -->
+
+    <script>
+
+        const chatFunction = () => {
+
+            // Elements
+            const name = document.getElementById('name').value;
+            const room = document.getElementById('room').value;
+            const history = document.getElementById('history');
+            const message = document.getElementById('message');
+            const send = document.getElementById('send');
+            const chatDiv = document.getElementById('chat-div');
+            const chatControl = document.getElementById('start-control');
+
+            chatDiv.classList.remove('invisible');
+            chatControl.classList.add('invisible');
+
+            // Get the websocket connection
+            const hostAndPort = `${window.location.hostname}:${window.location.port}`;
+            const uri = `ws://${hostAndPort}/chat?name=${name}&room=${room}`;
+            const webSocket = new WebSocket(uri);
+
+            // When the connection is open
+            webSocket.onopen = () => {
+                const html = `<b>CONNECTED</b> <br>`;
+                history.innerHTML += html;
+            };
+
+            // When the connection is closed
+            webSocket.onclose = () => {
+                const html = `<b>DISCONNECTED</b> <br>`;
+                history.innerHTML += html;
+            };
+
+            // Listen for messages
+            webSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const html = `<b>${data.sender}:</b> ${data.message} <br>`;
+                history.innerHTML += html;
+            };
+
+            // Listen for errors
+            webSocket.onerror = (error) => {
+                console.log(`WebSocket error: ${error}`);
+            };
+
+            // Send message when the send button is clicked
+            send.onclick = () => {
+                const messageValue = message.value;
+                message.value = "";
+                webSocket.send(JSON.stringify({
+                    sender: name,
+                    message: messageValue
+                }));
+            };
+
+            // when type enter key to send message
+            message.addEventListener('keyup', (event) => {
+                if (event.keyCode === 13) {
+                    send.click();
+                }
+            });
+
+        };
+
+        // On click of start button, call the chat function
+        document.getElementById('start').onclick = () => {
+            chatFunction();
+        };
+
+    </script>
+
+    <!--------------------------------------------------------------------------------------------->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>
